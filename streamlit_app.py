@@ -35,15 +35,15 @@ if st.button("💬 Get Answer"):
                     {"role": "user", "content": f"Context: {context}\n\nQuestion: {question}"}
                 ]
 
-                # Call OpenAI's chat_completions.create API with the context and question
-                response = openai.chat_completions.create(
+                # Call OpenAI's completions.create API with the context and question
+                response = openai.Completion.create(
                     model="gpt-3.5-turbo",  # Use the gpt-3.5-turbo model
-                    messages=messages,
+                    prompt=f"Context: {context}\n\nQuestion: {question}",
                     max_tokens=200  # You can adjust this as needed
                 )
 
                 # Extract the answer from the API response
-                answer = response['choices'][0]['message']['content'].strip()
+                answer = response['choices'][0]['text'].strip()
 
                 # Display the answer
                 st.success("✅ Answer:")
