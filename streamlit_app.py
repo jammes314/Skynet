@@ -31,7 +31,7 @@ if st.button("💬 Get Answer"):
             try:
                 # Prepare the chat-based message structure
                 messages = [
-                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "system", "content": "You are a helpful assistant that only answers based on the provided context. Do not generate any information not found in the context."},
                     {"role": "user", "content": f"Context: {context}\n\nQuestion: {question}"}
                 ]
 
@@ -50,4 +50,5 @@ if st.button("💬 Get Answer"):
                 st.markdown(answer)
             except Exception as e:
                 st.error(f"❌ An error occurred: {e}")
+
 
