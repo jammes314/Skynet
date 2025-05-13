@@ -30,15 +30,13 @@ if st.button("💬 Get Answer"):
         with st.spinner("Thinking..."):
             try:
                 # Call the OpenAI API with context + question
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {"role": "system", "content": "Answer the user's question using only the provided context. If the context is insufficient, say you don't know."},
-                        {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {question}"}
-                    ],
+                response = openai.completions.create(
+                    model="text-davinci-003",  # Use a specific model (like text-davinci-003)
+                    prompt=f"Context:\n{context}\n\nQuestion: {question}\n\nAnswer:",
+                    max_tokens=150,
                     temperature=0.2
                 )
-                answer = response["choices"][0]["message"]["content"]
+                answer = response["choices"][0]["text"].strip()
                 st.success("✅ Answer:")
                 st.markdown(answer)
             except Exception as e:
