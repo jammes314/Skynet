@@ -29,8 +29,8 @@ if st.button("💬 Get Answer"):
     else:
         with st.spinner("Thinking..."):
             try:
-                # Call the OpenAI API with context + question using the gpt-3.5-turbo model
-                response = openai.ChatCompletion.create(
+                # Call the OpenAI API with context + question using the new API format
+                response = openai.completions.create(
                     model="gpt-3.5-turbo",  # Use the gpt-3.5-turbo model
                     messages=[
                         {"role": "system", "content": "You are a helpful assistant."},
