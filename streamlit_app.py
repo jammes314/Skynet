@@ -1,56 +1,50 @@
 import streamlit as st
-from openai import OpenAI
+from transformers import pipeline
 
 # Show title and description.
-st.title("💬 Chatbot")
+st.title("💬 Chatbot - Question Answering with Fixed Context")
 st.write(
-    "This is a simple chatbot that uses OpenAI's GPT-3.5 model to generate responses. "
-    "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
-    "You can also learn how to build this app step by step by [following our tutorial](https://docs.streamlit.io/develop/tutorials/llms/build-conversational-apps)."
+    "This is a simple chatbot that answers questions based on a fixed context using a Hugging Face transformer model. "
+    "It does not use OpenAI's GPT model, and no API key is required."
 )
 
-# Ask user for their OpenAI API key via `st.text_input`.
-# Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
-# via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-if not openai_api_key:
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
-else:
+# Load the question-answering pipeline once.
+@st.cache_resource
+def load_qa_pipeline():
+    return pipeline("question-answering")
 
-    # Create an OpenAI client.
-    client = OpenAI(api_key=openai_api_key)
+qa_pipeline = load_qa_pipeline()
 
-    # Create a session state variable to store the chat messages. This ensures that the
-    # messages persist across reruns.
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+# Define the fixed context.
+context = (
+    "Artificial intelligence (AI) is a branch of computer science that aims to create machines that can perform tasks that would normally require human intelligence. "
+    "Machine learning (ML) is a subset of AI that involves the use of algorithms and statistical models to enable computers to improve their performance on a task through experience. "
+    "One common application of ML is in the field of natural language processing (NLP), where algorithms are used to understand and generate human language. "
+    "For example, GPT-3 is a state-of-the-art language model developed by OpenAI that can generate human-like text based on a given prompt."
+)
 
-    # Display the existing chat messages via `st.chat_message`.
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-    # Create a chat input field to allow the user to enter a message. This will display
-    # automatically at the bottom of the page.
-    if prompt := st.chat_input("What is up?"):
+# Display the chat history
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-        # Store and display the current prompt.
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
+# Handle new user input
+if question := st.chat_input("Ask a question based on the context above:"):
+    # Append user message
+    st.session_state.messages.append({"role": "user", "content": question})
+    with st.chat_message("user"):
+        st.markdown(question)
 
-        # Generate a response using the OpenAI API.
-        stream = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages
-            ],
-            stream=True,
-        )
+    # Generate answer using the QA pipeline
+    result = qa_pipeline(question=question, context=context)
+    answer = result["answer"]
 
-        # Stream the response to the chat using `st.write_stream`, then store it in 
-        # session state.
-        with st.chat_message("assistant"):
-            response = st.write_stream(stream)
-        st.session_state.messages.append({"role": "assistant", "content": response})
+    # Append assistant message
+    with st.chat_message("assistant"):
+        st.markdown(answer)
+    st.session_state.messages.append({"role": "assistant", "content": answer})
+
