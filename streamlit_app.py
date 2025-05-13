@@ -1,64 +1,45 @@
 import streamlit as st
 import openai
 
-# Load OpenAI API key
-openai.api_key = st.secrets["openai"]["api_key"]
-
-st.title("🔐 GPT-4 QA — Limited to Your Context")
+# Set up the title and description
+st.title("📘 Contextual Q&A Chatbot (OpenAI)")
 st.write(
-    "Ask questions based only on the context you provide. GPT-4 will not use external knowledge."
+    "This chatbot uses OpenAI to answer **only** based on the provided context. "
+    "Paste your OpenAI API key below to start."
 )
 
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# Input for OpenAI API key
+api_key = st.text_input("🔑 Enter your OpenAI API Key", type="password")
 
-# Display past messages
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+if not api_key:
+    st.warning("Please enter your OpenAI API key to continue.")
+    st.stop()
 
-# Input boxes
-context = st.text_area("📄 Enter the context:", height=200)
-question = st.text_input("❓ Enter your question about the context:")
-submit = st.button("Get Answer")
+# Set the API key for OpenAI
+openai.api_key = api_key
 
-if submit and context and question:
-    with st.chat_message("user"):
-        st.markdown(f"**Context:**\n{context}\n\n**Question:** {question}")
-    st.session_state.messages.append({
-        "role": "user",
-        "content": f"**Context:**\n{context}\n\n**Question:** {question}"
-    })
+# Input for context and question
+context = st.text_area("🧠 Context", height=200, placeholder="Paste your context here...")
+question = st.text_input("❓ Your question about the context")
 
-    # Craft GPT prompt
-    system_prompt = (
-        "You are a helpful assistant. Answer the question using only the context provided. "
-        "If the answer is not in the context, reply with \"I don't know.\""
-    )
-    user_prompt = f"Context:\n{context}\n\nQuestion:\n{question}"
-
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.2,
-            max_tokens=300
-        )
-        answer = response.choices[0].message["content"].strip()
-    except Exception as e:
-        answer = f"⚠️ Error: {e}"
-
-    with st.chat_message("assistant"):
-        st.markdown(f"**Answer:** {answer}")
-    st.session_state.messages.append({
-        "role": "assistant",
-        "content": f"**Answer:** {answer}"
-    })
-
-elif submit:
-    st.warning("Please provide both a context and a question.")
-
+# Button to get answer
+if st.button("💬 Get Answer"):
+    if not context or not question:
+        st.error("Please provide both a context and a question.")
+    else:
+        with st.spinner("Thinking..."):
+            try:
+                # Call the OpenAI API with context + question
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "Answer the user's question using only the provided context. If the context is insufficient, say you don't know."},
+                        {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {question}"}
+                    ],
+                    temperature=0.2
+                )
+                answer = response["choices"][0]["message"]["content"]
+                st.success("✅ Answer:")
+                st.markdown(answer)
+            except Exception as e:
+                st.error(f"❌ An error occurred: {e}")
