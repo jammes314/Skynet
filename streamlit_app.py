@@ -35,8 +35,8 @@ if st.button("💬 Get Answer"):
                     {"role": "user", "content": f"Context: {context}\n\nQuestion: {question}"}
                 ]
 
-                # Call OpenAI's ChatCompletion API with the context and question
-                response = openai.ChatCompletion.create(
+                # Call OpenAI's chat_completions.create API with the context and question
+                response = openai.chat_completions.create(
                     model="gpt-3.5-turbo",  # Use the gpt-3.5-turbo model
                     messages=messages,
                     max_tokens=200  # You can adjust this as needed
@@ -50,4 +50,5 @@ if st.button("💬 Get Answer"):
                 st.markdown(answer)
             except Exception as e:
                 st.error(f"❌ An error occurred: {e}")
+
 
