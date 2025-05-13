@@ -29,15 +29,20 @@ if st.button("💬 Get Answer"):
     else:
         with st.spinner("Thinking..."):
             try:
-                # Call the OpenAI API with context + question using the new API format
-                response = openai.completions.create(
+                # Combine context and question into the prompt
+                prompt = f"Context: {context}\n\nQuestion: {question}\nAnswer:"
+
+                # Call OpenAI's Completion API with the prompt and the model
+                response = openai.Completion.create(
                     model="gpt-3.5-turbo",  # Use the gpt-3.5-turbo model
-                    messages=[
-                        {"role": "system", "content": "You are a helpful assistant."},
-                        {"role": "user", "content": f"Context: {context} \n\nQuestion: {question}"}
-                    ]
+                    prompt=prompt,
+                    max_tokens=200  # You can adjust this as needed
                 )
-                answer = response['choices'][0]['message']['content'].strip()
+
+                # Extract the answer from the API response
+                answer = response['choices'][0]['text'].strip()
+
+                # Display the answer
                 st.success("✅ Answer:")
                 st.markdown(answer)
             except Exception as e:
