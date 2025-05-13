@@ -2,3 +2,4 @@ streamlit
 openai
 transformers
 torch
+openai==0.28
