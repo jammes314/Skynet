@@ -29,14 +29,15 @@ if st.button("💬 Get Answer"):
     else:
         with st.spinner("Thinking..."):
             try:
-                # Call the OpenAI API with context + question
-                response = openai.completions.create(
-                    model="text-davinci-003",  # Use a specific model (like text-davinci-003)
-                    prompt=f"Context:\n{context}\n\nQuestion: {question}\n\nAnswer:",
-                    max_tokens=150,
-                    temperature=0.2
+                # Call the OpenAI API with context + question using the gpt-3.5-turbo model
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",  # Use the gpt-3.5-turbo model
+                    messages=[
+                        {"role": "system", "content": "You are a helpful assistant."},
+                        {"role": "user", "content": f"Context: {context} \n\nQuestion: {question}"}
+                    ]
                 )
-                answer = response["choices"][0]["text"].strip()
+                answer = response['choices'][0]['message']['content'].strip()
                 st.success("✅ Answer:")
                 st.markdown(answer)
             except Exception as e:
